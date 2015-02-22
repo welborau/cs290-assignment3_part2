@@ -1,6 +1,3 @@
-/**
- * Function for establishing the gists per pages as requested
- */
 function getPages() {
     // if the user selects 6 pages, result in error
     if (document.getElementById('pages').value == 6) {
@@ -30,8 +27,8 @@ function getPages() {
                         // waits for the request to be done, then finds the correct page and assigns it to the gist list
                         if(i == pagesVal) {
                             var checkedList = checked();
-                            var gist_list = gistList(request_Array, checkedList);
-                            createList(gist_list);
+                            gistList(request_Array, checkedList);
+                            createList();
                         }
                     }
                     else {
@@ -87,7 +84,7 @@ function checked()
     var checkedList = [];
     if (document.getElementById('Javascript').checked)
     {
-        checkedList.push('Javascript');
+        checkedList.push('JavaScript');
     }
     if (document.getElementById('JSON').checked)
     {
@@ -124,8 +121,10 @@ function gistList(array, checked) {
                     var Gist = {
                         filename: file['filename'],         // file name of gist
                         description: gist['description'],   // description of gist
-                        url: gist['html_url']               // url of gist
+                        url: gist['html_url'],               // url of gist
+                        favorite: 'no'
                     };
+
                     gist_list.push(Gist);                   // pushes the gist into the list
                 }
                 else {
@@ -135,37 +134,90 @@ function gistList(array, checked) {
                             var matchedGist = {
                                 filename: file['filename'],         // file name of gist
                                 description: gist['description'],   // description of gist
-                                url: gist['html_url']               // url of gist
+                                url: gist['html_url'],               // url of gist
+                                favorite: 'no'
                             };
                             gist_list.push(matchedGist);     // pushes the matched gists into the list
+                            console.log(matchedGist);
                         }
                     }
                 }
             }
         }
     }
-    return gist_list;
 }
 
 /**
  * When the search button is clicked, run the program
   */
 document.getElementById("search_button").onclick = function() {
-    getPages();
+   fullq = document.getElementById('gist_list');
+    if (fullq)
+    {
+        document.getElementById('gist_list').innerHTML = '';
+        getPages();
+    }
+    else {
+        getPages();
+    }
 };
 
 /**
  * Inserts the table into the table element in html, using gist list and it's objects and keys
  * @param gist_list
  */
-function createList(gist_list) {
-    console.log('>>>>>>>>>>>', gist_list);
+function createList() {
     var glist = document.getElementById('gist_list');
     var listItems = '';
     // loops through all gists in the gist list
     for (var i = 0; i < gist_list.length; i++) {
-        listItems += '<tr><td>' + gist_list[i].filename + '</td><td>' + '<a href="'+ gist_list[i].url+ '">' + gist_list[i].description + '</a></td></tr>';
+        if (!gist_list[i].description)
+        {
+            listItems += '<tr><td>' + gist_list[i].filename + '</td><td>' + '<a href="'+ gist_list[i].url+ '">' + 'No description' + '</a></td>' + '<td><button id="' + 'Fav' + i + '" onclick="createFav(' + i + ')">' + 'Add to Favorites' + '</button></td></tr>';
+        }
+        else
+        {
+            listItems += '<tr><td>' + gist_list[i].filename + '</td><td>' + '<a href="' + gist_list[i].url + '">' + gist_list[i].description + '</a></td>' + '<td><button id="' + 'Fav' + i + '" onclick="createFav(' + i + ')">' + 'Add to Favorites' + '</button></td></tr>';
+        }
     }
     // pushes the table into the html
     glist.innerHTML = listItems;
+}
+
+/**
+ * Changes the favorite from no to yes
+ */
+function createFav(i)
+{
+    gist_list[i].favorite = "yes";
+    console.log("This button has been clicked! ",  i, gist_list[i]);
+    console.log(i);
+    createFavList();
+}
+
+/**
+ * Creates the list of Favorites
+ */
+function createFavList() {
+    var favlist = document.getElementById('favorites');
+    var favlistItems = '';
+    // loop through all gists in the gist list and find the ones with yes
+    for (var i = 0; i <gist_list.length; i++) {
+        if (gist_list[i].favorite == "yes")
+        {
+            favlistItems += '<tr><td>' + gist_list[i].filename + '</td><td><button id="' + 'UnFav' + i + '" onclick="unFav(' + i + ')">' + 'Remove from Favorite' + '</button></td></tr>';
+        }
+    }
+    favlist.innerHTML = favlistItems;
+}
+
+/**
+ * Changes the favorite from yes to no and recreates the list of Favorites
+ */
+function unFav(i)
+{
+    gist_list[i].favorite = "no";
+    console.log("This button has been clicked! ",  i, gist_list[i]);
+    console.log(i);
+    createFavList();
 }
